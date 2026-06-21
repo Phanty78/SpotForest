@@ -1,6 +1,8 @@
 const server = Bun.serve({
     routes: {
-        "/health": Response.json({ ok : true })
+        "/health": Response.json({ ok : true }),
+
+        "/*": new Response ("Lost in the forest?", { status : 404 })
     }
 })
 
