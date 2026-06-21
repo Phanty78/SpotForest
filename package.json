@@ -1,5 +1,16 @@
 {
-  "name": "spotForest",
-  "version": "1.0.0",
-  "workspaces": ["backend","frontend"]
+	"name": "spotForest",
+	"version": "1.0.0",
+	"workspaces": [
+		"backend",
+		"frontend"
+	],
+	"scripts": {
+		"format": "bunx --bun @biomejs/biome format --write",
+		"lint": "bunx --bun @biomejs/biome lint --write",
+		"check": "bunx --bun @biomejs/biome check --write"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.0"
+	}
 }
