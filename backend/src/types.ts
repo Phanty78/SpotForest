@@ -1,4 +1,4 @@
-type Spot = {
+export type Spot = {
       id: string
       title: string
       description: string | null
