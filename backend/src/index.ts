@@ -1,4 +1,4 @@
-import type { Spot, SpotError, ValidateSpotResult } from "./types.ts";
+import type { Spot, SpotError, ValidateSpotResult, SpotId } from "./types.ts";
 
 const spots: Spot[] = [
 	{
@@ -54,9 +54,31 @@ const server = Bun.serve({
 			},
 		},
 
+		"/spots/:id": req => {
+			const id = req.params.id
+			const parsedId = validateSpotId(id)
+			if (!parsedId.ok){
+				return new Response(`${parsedId.message}`, { status: 400 });
+			}else {
+				const spot = spots.find(array => array.id === parsedId.message)
+				if (!spot) {
+					return new Response("spot is undefined", { status: 404 })
+				}
+      			return Response.json(spot);
+			}
+			
+    },
+
 		"/*": new Response("Lost in the forest?", { status: 404 }),
 	},
 });
+
+function validateSpotId(id: string): SpotId {
+	if (id === "") {
+		return { ok: false, message: "id can't be empty" };
+	}
+	return { ok: true, message: id };
+}
 
 function validateBody(body: unknown): ValidateSpotResult {
 	if (typeof body !== "object" || body === null) {
