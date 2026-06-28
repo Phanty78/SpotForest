@@ -17,17 +17,17 @@ db.run(`
   `);
 
 // 2. Statements préparés
-export const addSpot = db.prepare(`
+const insertSpot = db.prepare(`
     INSERT INTO spots (id, title, description, category, latitude, longitude, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 
-export const getAllSpots = db.prepare(`SELECT * FROM spots`);
-export const getSpotById = db.prepare(`SELECT * FROM spots WHERE id = ?`);
-export const deleteSpotById = db.prepare(`DELETE FROM spots WHERE id = ?`);
+const selectAllSpots = db.prepare(`SELECT * FROM spots`);
+const selectSpotById = db.prepare(`SELECT * FROM spots WHERE id = ?`);
+const eraseSpotById = db.prepare(`DELETE FROM spots WHERE id = ?`);
 
 // 3. Mapping SQL → Spot (created_at → createdAt)
-export const rowToSpot = (row: any): Spot => ({
+const rowToSpot = (row: any): Spot => ({
 	id: row.id,
 	title: row.title,
 	description: row.description,
@@ -36,3 +36,20 @@ export const rowToSpot = (row: any): Spot => ({
 	longitude: row.longitude,
 	createdAt: row.created_at,
 });
+
+export function getAllSpots(): Spot[] {
+  return selectAllSpots.all().map(rowToSpot)
+}
+
+export function getSpotById(id : string): Spot | null {
+  const row = selectSpotById.get(id)
+  return row ? rowToSpot(row) : null
+}
+
+export function addSpot(spot : Spot): void {
+  insertSpot.run(spot.id, spot.title, spot.description, spot.category, spot.latitude, spot.longitude, spot.createdAt)
+}
+
+export function deleteSpotById(id : string): boolean {
+  return eraseSpotById.run(id).changes === 1
+}
