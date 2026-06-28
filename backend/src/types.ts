@@ -28,6 +28,6 @@ export type ValidateSpotResult =
 
 export type SpotError = Extract<ValidateSpotResult, { ok: false }>;
 
-export type SpotId = 
-	  | { ok: true; message: string }
-	  | { ok: false; message: string }
+export type SpotId =
+	| { ok: true; message: string }
+	| { ok: false; message: string };

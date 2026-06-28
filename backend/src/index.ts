@@ -1,35 +1,5 @@
-import type { Spot, SpotError, ValidateSpotResult, SpotId } from "./types.ts";
-
-const spots: Spot[] = [
-	{
-		id: "spot-1",
-		title: "Belvédère de la Dent de Crolles",
-		description: "Vue panoramique sur la Chartreuse et Belledonne.",
-		category: "viewpoint",
-		latitude: 45.3042,
-		longitude: 5.8539,
-		createdAt: "2026-06-15T09:30:00.000Z",
-	},
-	{
-		id: "spot-2",
-		title: "Source du Guiers Mort",
-		description: null,
-		category: "water",
-		latitude: 45.3897,
-		longitude: 5.8125,
-		createdAt: "2026-06-16T14:12:00.000Z",
-	},
-	{
-		id: "spot-3",
-		title: "Passage exposé - Couloir Nord",
-		description:
-			"Attention, câble recommandé, terre glissante par temps humide.",
-		category: "danger",
-		latitude: 45.3112,
-		longitude: 5.8601,
-		createdAt: "2026-06-18T08:05:00.000Z",
-	},
-];
+import { addSpot, deleteSpotById, getAllSpots, getSpotById } from "./db.ts";
+import type { Spot, SpotError, SpotId, ValidateSpotResult } from "./types.ts";
 
 const server = Bun.serve({
 	routes: {
@@ -38,7 +8,7 @@ const server = Bun.serve({
 		},
 
 		"/spots": {
-			GET: () => Response.json(spots),
+			GET: () => Response.json(getAllSpots()),
 			POST: async (req) => {
 				try {
 					const body = await req.json();
@@ -46,7 +16,7 @@ const server = Bun.serve({
 					if (!result.ok) {
 						return renderSpotError(result);
 					}
-					spots.push(result.value);
+					addSpot(result.value);
 					return Response.json(result.value, { status: 201 });
 				} catch {
 					return new Response("invalid JSON", { status: 400 });
@@ -54,20 +24,32 @@ const server = Bun.serve({
 			},
 		},
 
-		"/spots/:id": req => {
-			const id = req.params.id
-			const parsedId = validateSpotId(id)
-			if (!parsedId.ok){
-				return new Response(`${parsedId.message}`, { status: 400 });
-			}else {
-				const spot = spots.find(array => array.id === parsedId.message)
-				if (!spot) {
-					return new Response("spot is undefined", { status: 404 })
+		"/spots/:id": {
+			GET: (req) => {
+				const id = req.params.id;
+				const parsedId = validateSpotId(id);
+				if (!parsedId.ok) {
+					return new Response(`${parsedId.message}`, { status: 400 });
+				} else {
+					const spot = getSpotById(parsedId.message);
+					if (!spot) {
+						return new Response("spot is undefined", { status: 404 });
+					}
+					return Response.json(spot);
 				}
-      			return Response.json(spot);
-			}
-			
-    },
+			},
+			DELETE: (req) => {
+				const id = req.params.id;
+				const parsedId = validateSpotId(id);
+				if (!parsedId.ok) {
+					return new Response(`${parsedId.message}`, { status: 400 });
+				} else {
+					const deleted = deleteSpotById(id);
+					if (!deleted) return new Response("not found", { status: 404 });
+					return new Response(null, { status: 204 });
+				}
+			},
+		},
 
 		"/*": new Response("Lost in the forest?", { status: 404 }),
 	},
